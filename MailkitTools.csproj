@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootNamespace>MailkitTools</RootNamespace>
+    <Authors>Abdourahamane Kaba</Authors>
+    <Company>Karfamsoft</Company>
+    <RepositoryUrl>https://github.com/bigabdoul/mailkit-tools</RepositoryUrl>
+    <PackageId>MailkitTools</PackageId>
+    <Product>MailkitTools</Product>
+    <AssemblyName>MailkitTools</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netcoreapp2.0\MailkitTools.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Mailkit-Tools.DependencyInjection\**" />
+    <Compile Remove="test\**" />
+    <EmbeddedResource Remove="Mailkit-Tools.DependencyInjection\**" />
+    <EmbeddedResource Remove="test\**" />
+    <None Remove="Mailkit-Tools.DependencyInjection\**" />
+    <None Remove="test\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" Version="2.0.3" />
+  </ItemGroup>
+
+</Project>
