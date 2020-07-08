@@ -38,10 +38,18 @@ In `Startup.cs`:
 
 ```C#
 using MailkitTools.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 public class Startup
 {
+    public Startup(IConfiguration configuration)
+    {
+        Configuration = configuration;
+    }
+
+    public IConfiguration Configuration { get; }
+
     public void ConfigureServices(IServiceCollection services)
     {
         // ...
@@ -54,7 +62,7 @@ public class Startup
 }
 ```
 
-In the appsettings.json configuration file:
+In the appsettings.json configuration file (update appropriately):
 
 ```JSON
 {
