@@ -1,7 +1,8 @@
 # mailkit-tools
-MailkitTools provides e-mail services built on top of the popular MailKit library. 
-These services are ideal to use within any .NET Core project that requires e-mail 
-services, such as sending messages with an SMTP client and receiving e-mails with 
+
+MailkitTools provides e-mail services built on top of the popular MailKit library.
+These services are ideal to use within any .NET Core project that requires e-mail
+services, such as sending messages with an SMTP client and receiving e-mails with
 a POP3 client.
 
 ### Getting started with an email sender:
@@ -36,7 +37,7 @@ public interface IEmailSender
 }
 ```
 
-An implementation of ```IEmailSender```:
+An implementation of `IEmailSender`:
 
 ```C#
 using MailkitTools;
@@ -51,17 +52,17 @@ using System.Threading.Tasks;
 public class EmailSender : IEmailSender
 {
     private bool _initialized;
-    private IEmailConfigurationProvider _settingsFactory;
+    private IEmailConfigurationProvider _configProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmailSender"/> class.
     /// </summary>
     /// <param name="emailClient">An object used to send emails.</param>
-    /// <param name="settingsFactory">An object used to retrieve email configuration settings.</param>
-    public EmailSender(IEmailClientService emailClient, IEmailConfigurationProvider settingsFactory)
+    /// <param name="configProvider">An object used to retrieve email configuration settings.</param>
+    public EmailSender(IEmailClientService emailClient, IEmailConfigurationProvider configProvider)
     {
         Client = emailClient;
-        _settingsFactory = settingsFactory;
+        _configProvider = configProvider;
     }
 
     /// <summary>
@@ -76,12 +77,12 @@ public class EmailSender : IEmailSender
     protected virtual async Task InitAsync()
     {
         if (_initialized) return;
-        Client.Configuration = await _settingsFactory.GetConfigurationAsync();
+        Client.Configuration = await _configProvider.GetConfigurationAsync();
         _initialized = true;
     }
 
     /// <summary>
-    /// Updates the configuration settings used to connect with the underlying <see cref="IEmailClientService"/>.
+    /// Updates the configuration settings used to connect to the underlying <see cref="IEmailClientService"/>.
     /// </summary>
     /// <param name="config">The new configuration to set.</param>
     public virtual void ChangeConfiguration(IEmailClientConfiguration config)
@@ -98,8 +99,8 @@ public class EmailSender : IEmailSender
     /// <param name="to">A comma- (or semi-colon) separated list of addresses in the 'To' header.</param>
     /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
     /// <returns></returns>
-    public async Task SendEmailAsync(string subject, string body, string from, string to, CancellationToken cancellationToken = default) 
-        => await SendEmailAsync(EmailClientService.CreateMessage(subject, body, from, to), cancellationToken);
+    public Task SendEmailAsync(string subject, string body, string from, string to, CancellationToken cancellationToken = default)
+        => SendEmailAsync(EmailClientService.CreateMessage(subject, body, from, to), cancellationToken);
 
     /// <summary>
     /// Send the specified message asynchronously.
@@ -115,7 +116,7 @@ public class EmailSender : IEmailSender
 }
 ```
 
-An implementation of ```MailkitTools.IEmailConfigurationProvider```:
+An implementation of `MailkitTools.IEmailConfigurationProvider`:
 
 ```C#
 using MailkitTools;
@@ -123,10 +124,10 @@ using MailkitTools.Services;
 
 public class EmailConfigurationProvider : IEmailConfigurationProvider
 {
-    public async Task<IEmailClientConfiguration> GetConfigurationAsync(CancellationToken cancellationToken = default(CancellationToken))
+    public Task<IEmailClientConfiguration> GetConfigurationAsync(CancellationToken cancellationToken = default)
     {
         // normally, you would retrieve the settings from a (file or database) store;
-        return new SmtpClientConfiguration
+        return Task.Run(() => new EmailClientConfiguration
         {
             Host = "smtp.example.com", // replace with your SMTP server address
             Port = 25, // use 465 (or 587, or whatever is appropriate for you) for a secure SMTP port
@@ -134,11 +135,11 @@ public class EmailConfigurationProvider : IEmailConfigurationProvider
             UserName = "user.name@example.com", // replace with a valid user account name
             Password = "password", // adjust appropriately
             RequiresAuth = true, // set appropriately
-        };
+        });
     }
 }
 
-public class SmtpClientConfiguration : IEmailClientConfiguration
+public class EmailClientConfiguration : IEmailClientConfiguration
 {
     public string Host { get; set; }
     public int Port { get; set; }
@@ -149,7 +150,7 @@ public class SmtpClientConfiguration : IEmailClientConfiguration
 }
 ```
 
-In ```Startup.cs```:
+In `Startup.cs`:
 
 ```C#
 using MailkitTools.DependencyInjection;
@@ -161,7 +162,7 @@ public class Startup
     {
         // ...
         services.AddMailkitTools<EmailConfigurationProvider>();
-        services..AddTransient<IEmailSender, EmailSender>();
+        services.AddTransient<IEmailSender, EmailSender>();
         // ...
     }
 }
@@ -183,7 +184,7 @@ public class EmailModel
 public class TestEmailModel
 {
     public EmailModel Message { get; set; }
-    public SmtpClientConfiguration Config { get; set; }
+    public EmailClientConfiguration Config { get; set; }
 }
 ```
 
@@ -198,31 +199,33 @@ using Microsoft.AspNetCore.Mvc;
 public class EmailController : Controller
 {
     private readonly IEmailClientService _emailClient;
-    private readonly IEmailConfigurationProvider _emailClientSettingsFactory;
+    private readonly IEmailConfigurationProvider _emailConfigProvider;
 
-    public EmailController(IEmailClientService emailClient, IEmailConfigurationProvider emailClientSettingsFactory)
+    public EmailController(IEmailClientService emailClient, IEmailConfigurationProvider emailConfigProvider)
     {
         _emailClient = emailClient;
-        _emailClientSettingsFactory = emailClientSettingsFactory;
+        _emailConfigProvider = emailConfigProvider;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Send([FromBody] EmailModel model)
+    public Task<IActionResult> Send([FromBody] EmailModel model)
     {
-        return await SendMessageAsync(model);
+        return SendMessageAsync(model);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Test([FromBody] TestEmailModel model)
+    public Task<IActionResult> Test([FromBody] TestEmailModel model)
     {
-        return await SendMessageAsync(model.Message, model.Config);
+        return SendMessageAsync(model.Message, model.Config);
     }
 
     protected async Task<IActionResult> SendMessageAsync(EmailModel model, IEmailClientConfiguration config = null)
     {
         if (config == null)
-            config = await _emailClientSettingsFactory.GetConfigurationAsync();
+            config = await _emailConfigProvider.GetConfigurationAsync();
         _emailClient.Configuration = config;
+
+        // check the ControllerExtensions class below
         return await this.SendEmailAsync(model, _emailClient);
     }
 }
@@ -267,7 +270,7 @@ public static class ControllerExtensions
                 model.To
             );
 
-            await emailClient.SendAsync(message);
+            await emailClient.SendEmailAsync(message);
             return controller.Ok();
         }
         catch (ServiceNotAuthenticatedException ex)
