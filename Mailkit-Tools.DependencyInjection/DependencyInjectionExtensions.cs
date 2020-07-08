@@ -19,6 +19,7 @@ namespace MailkitTools.DependencyInjection
         {
             // email client configuration support
             return services
+                .AddTransient<IEmailSender, EmailSender>()
                 .AddTransient<IEmailConfigurationProvider, TFactory>()
                 .AddTransient<IEmailClientService, EmailClientService>()
                 .AddTransient<IPop3ClientService, Pop3ClientService>();
