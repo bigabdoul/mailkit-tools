@@ -275,7 +275,7 @@ public static class ControllerExtensions
         }
         catch (ServiceNotAuthenticatedException ex)
         {
-            if (false == config?.RequiresAuth)
+            if (true == config?.RequiresAuth)
                 return controller.BadRequest(new ServiceNotAuthenticatedException(SmtpServerRequiresAuth));
             return controller.BadRequest(ex);
         }
