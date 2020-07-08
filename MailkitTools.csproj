@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>MailkitTools</RootNamespace>
     <Authors>Abdourahamane Kaba</Authors>
     <Company>Karfamsoft</Company>
@@ -9,6 +9,13 @@
     <PackageId>MailkitTools</PackageId>
     <Product>MailkitTools</Product>
     <AssemblyName>MailkitTools</AssemblyName>
+    <Description>MailkitTools provides e-mail services built on top of the popular MailKit library. These services are ideal to use within any .NET Core project that requires e-mail services, such as sending messages with an SMTP client and receiving e-mails with a POP3 client.</Description>
+    <Copyright>© 2018 - All rights reserved</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bigabdoul/mailkit-tools</PackageProjectUrl>
+    <PackageTags>.net core, mailkit, tools, email, support, smtp, pop3</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
