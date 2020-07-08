@@ -17,10 +17,10 @@ using MailkitTools.Services;
 
 public class EmailConfigurationProvider : EmailConfigurationProviderBase
 {
-    public override Task<IEmailClientConfiguration> GetConfigurationAsync(CancellationToken cancellationToken = default)
+    public override async Task<IEmailClientConfiguration> GetConfigurationAsync(CancellationToken cancellationToken = default)
     {
         // normally, you would retrieve the settings from a (file or database) store;
-        return Task.Run(() => new EmailClientConfiguration
+        return Task.Run(() => (IEmailClientConfiguration)new EmailClientConfiguration
         {
             Host = "smtp.example.com", // replace with your SMTP server address
             Port = 25, // use 465 (or 587, or whatever is appropriate for you) for a secure SMTP port
