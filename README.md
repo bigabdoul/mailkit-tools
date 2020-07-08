@@ -7,28 +7,29 @@ a POP3 client.
 
 ### Getting started with the email sender:
 
-An implementation of the ```IEmailSender``` interface is now included in the source.
-Here's a simplified implementation of the `MailkitTools.IEmailConfigurationProvider` 
+An implementation of the `IEmailSender` interface is now included in the source.
+Here's a simplified implementation of the `MailkitTools.IEmailConfigurationProvider`
 interface:
 
 ```C#
 using MailkitTools;
-using MailkitTools.Services;
+using Microsoft.Extensions.Options;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class EmailConfigurationProvider : EmailConfigurationProviderBase
 {
-    public override async Task<IEmailClientConfiguration> GetConfigurationAsync(CancellationToken cancellationToken = default)
+    private readonly IEmailClientConfiguration _clientConfig;
+
+    public EmailConfigurationProvider(IOptions<EmailClientConfiguration> clientConfig)
+    {
+        _clientConfig = clientConfig.Value;
+    }
+
+    public override Task<IEmailClientConfiguration> GetConfigurationAsync(CancellationToken cancellationToken = default)
     {
         // normally, you would retrieve the settings from a (file or database) store;
-        return Task.Run(() => (IEmailClientConfiguration)new EmailClientConfiguration
-        {
-            Host = "smtp.example.com", // replace with your SMTP server address
-            Port = 25, // use 465 (or 587, or whatever is appropriate for you) for a secure SMTP port
-            UseSsl = false, // use true if you're using Secure Sockets Layer protocol
-            UserName = "user.name@example.com", // replace with a valid user account name
-            Password = "password", // adjust appropriately
-            RequiresAuth = true, // set appropriately
-        });
+        return Task.Run(() => _clientConfig);
     }
 }
 ```
@@ -45,9 +46,26 @@ public class Startup
     {
         // ...
         services.AddMailkitTools<EmailConfigurationProvider>();
-        services.AddTransient<IEmailSender, EmailSender>();
+
+        // Don't forget to add a section named "EmailClientConfiguration" in the appsettings.json file
+        services.Configure<EmailClientConfiguration>(Configuration.GetSection(nameof(EmailClientConfiguration)));
         // ...
     }
+}
+```
+
+In the appsettings.json configuration file:
+
+```JSON
+{
+    "EmailClientConfiguration": {
+    "Host": "smtp.example.com",
+    "Port": 25,
+    "UseSsl": false,
+    "RequiresAuth": false,
+    "UserName": "username@example.com",
+    "Password": "some secure password"
+  }
 }
 ```
 
