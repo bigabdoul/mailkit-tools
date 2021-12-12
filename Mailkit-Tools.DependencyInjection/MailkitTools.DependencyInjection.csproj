@@ -1,17 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Description>Provides extensions methods for the Microsoft.Extensions.DependencyInjection.IServiceCollection type.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Provides MailkitTools extension methods for the Microsoft.Extensions.DependencyInjection.IServiceCollection type.</Description>
     <RepositoryUrl>https://github.com/bigabdoul/mailkit-tools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <Authors>Abdourahamane Kaba</Authors>
     <Company>Karfamsoft</Company>
     <PackageId>MailkitTools.DependencyInjection</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bigabdoul/mailkit-tools</PackageProjectUrl>
+    <PackageTags>.net core, mailkit, tools, email, support, smtp, pop3, dependency-injection</PackageTags>
+    <Version>1.1.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netcoreapp2.0\MailkitTools.DependencyInjection.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netstandard2.0\MailkitTools.DependencyInjection.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

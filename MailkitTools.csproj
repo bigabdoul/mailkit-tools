@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>MailkitTools</RootNamespace>
     <Authors>Abdourahamane Kaba</Authors>
     <Company>Karfamsoft</Company>
@@ -16,7 +16,8 @@
     <PackageTags>.net core, mailkit, tools, email, support, smtp, pop3</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
+    <PackageReleaseNotes>Lower target framework from netcoreapp3.1 to netstandard2.0</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
