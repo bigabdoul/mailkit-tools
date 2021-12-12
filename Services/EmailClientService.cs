@@ -52,7 +52,7 @@ namespace MailkitTools.Services
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public virtual async Task SendAsync(MimeMessage message, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task SendAsync(MimeMessage message, CancellationToken cancellationToken = default)
             => await SendAsync(new MimeMessage[] { message }, cancellationToken);
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace MailkitTools.Services
         /// <param name="messages">The collection of messages to send.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public virtual async Task SendAsync(IEnumerable<MimeMessage> messages, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task SendAsync(IEnumerable<MimeMessage> messages, CancellationToken cancellationToken = default)
         {
             IMailTransport client = null;
             try
@@ -205,15 +205,12 @@ namespace MailkitTools.Services
         /// <returns></returns>
         protected async Task OnSuccessAsync(MimeMessage message)
         {
-            if (Success != null)
+            try
             {
-                try
-                {
-                    await Success.Invoke(new SendEventArgs(message));
-                }
-                catch
-                {
-                }
+                await Success?.Invoke(new SendEventArgs(message));
+            }
+            catch
+            {
             }
         }
     }
