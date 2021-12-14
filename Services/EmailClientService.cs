@@ -196,6 +196,75 @@ namespace MailkitTools.Services
             return message;
         }
 
+        /// <summary>
+        /// Creates and returns a new instance of the <see cref="MimeMessage"/> class using the specified parameters, optionally adding attachments.
+        /// </summary>
+        /// <param name="subject">The subject of the message.</param>
+        /// <param name="body">The body of the message.</param>
+        /// <param name="from">A comma- (or semi-colon) separated list of addresses in the 'From' header.</param>
+        /// <param name="to">A comma- (or semi-colon) separated list of addresses in the 'To' header.</param>
+        /// <param name="attachments">An array of tuples to add as attachments to the message to create.</param>
+        /// <returns></returns>
+        public static MimeMessage CreateMessage(string subject, string body, string from, string to, params (string fileName, byte[] data, string contentType)[] attachments)
+        {
+            return CreateMessage(subject, body, from, to, TextFormat.Html, messageId: null, attachments);
+        }
+
+        /// <summary>
+        /// Creates and returns a new instance of the <see cref="MimeMessage"/> class using the specified parameters, optionally adding attachments.
+        /// </summary>
+        /// <param name="subject">The subject of the message.</param>
+        /// <param name="body">The body of the message.</param>
+        /// <param name="from">A comma- (or semi-colon) separated list of addresses in the 'From' header.</param>
+        /// <param name="to">A comma- (or semi-colon) separated list of addresses in the 'To' header.</param>
+        /// <param name="bodyFormat">The text format of the message body.</param>
+        /// <param name="attachments">An array of tuples to add as attachments to the message to create.</param>
+        /// <returns></returns>
+        public static MimeMessage CreateMessage(string subject, string body, string from, string to, TextFormat bodyFormat, params (string fileName, byte[] data, string contentType)[] attachments)
+        {
+            return CreateMessage(subject, body, from, to, bodyFormat, messageId: null, attachments);
+        }
+
+        /// <summary>
+        /// Creates and returns a new instance of the <see cref="MimeMessage"/> class using the specified parameters, optionally adding attachments.
+        /// </summary>
+        /// <param name="subject">The subject of the message.</param>
+        /// <param name="body">The body of the message.</param>
+        /// <param name="from">A comma- (or semi-colon) separated list of addresses in the 'From' header.</param>
+        /// <param name="to">A comma- (or semi-colon) separated list of addresses in the 'To' header.</param>
+        /// <param name="bodyFormat">The text format of the message body.</param>
+        /// <param name="messageId">The identifier of the message. Can be null.</param>
+        /// <param name="attachments">An array of tuples to add as attachments to the message to create.</param>
+        /// <returns></returns>
+        public static MimeMessage CreateMessage(string subject, string body, string from, string to, TextFormat bodyFormat, string messageId, params (string fileName, byte[] data, string contentType)[] attachments)
+        {
+            var message = CreateMessage(subject, body, from, to, bodyFormat, messageId);
+            AddAttachments(message, attachments);
+            return message;
+        }
+
+        /// <summary>
+        /// Adds attachments to the specified message.
+        /// </summary>
+        /// <param name="message">The message to add attachments to.</param>
+        /// <param name="attachments">An array of tuples to add as attachments to the specified message.</param>
+        public static MimeMessage AddAttachments(MimeMessage message, params (string fileName, byte[] data, string contentType)[] attachments)
+        {
+            if (attachments?.Length > 0)
+            {
+                var builder = new BodyBuilder();
+
+                foreach (var (fileName, data, contentType) in attachments)
+                {
+                    builder.Attachments.Add(fileName, data, ContentType.Parse(contentType));
+                }
+
+                message.Body = builder.ToMessageBody();
+            }
+
+            return message;
+        }
+
         #endregion
 
         /// <summary>
