@@ -115,7 +115,7 @@ namespace MailkitTools.Services
         /// </summary>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public virtual async Task<IList<MimeMessage>> ReceiveAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IList<MimeMessage>> ReceiveAsync(CancellationToken cancellationToken = default)
         {
             IList<MimeMessage> list = null;
 
@@ -154,7 +154,7 @@ namespace MailkitTools.Services
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
         /// <returns></returns>
-        protected virtual async Task<IMailService> CreateIncomingMailClientAsync(CancellationToken cancellationToken = default(CancellationToken), RemoteCertificateValidationCallback certificateValidator = null)
+        protected virtual async Task<IMailService> CreateIncomingMailClientAsync(CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
             => await new ImapClient().ConnectAsync(Configuration, cancellationToken, certificateValidator);
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace MailkitTools.Services
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
         /// <returns></returns>
-        protected virtual async Task<IMailTransport> CreateOutgoingMailClientAsync(CancellationToken cancellationToken = default(CancellationToken), RemoteCertificateValidationCallback certificateValidator = null)
+        protected virtual async Task<IMailTransport> CreateOutgoingMailClientAsync(CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
           => (IMailTransport)await new SmtpClient().ConnectAsync(Configuration, cancellationToken, certificateValidator);
 
         #region static
