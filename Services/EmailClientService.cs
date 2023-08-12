@@ -272,15 +272,10 @@ namespace MailkitTools.Services
         /// </summary>
         /// <param name="message">The message that was sent.</param>
         /// <returns></returns>
-        protected async Task OnSuccessAsync(MimeMessage message)
+        protected Task OnSuccessAsync(MimeMessage message)
         {
-            try
-            {
-                await Success?.Invoke(new SendEventArgs(message));
-            }
-            catch
-            {
-            }
+            var success = Success;
+            return success != null ? success.Invoke(new SendEventArgs(message)) : Task.CompletedTask;
         }
     }
 }
