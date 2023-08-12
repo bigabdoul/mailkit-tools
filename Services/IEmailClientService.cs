@@ -22,7 +22,7 @@ namespace MailkitTools.Services
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task SendAsync(MimeMessage message, CancellationToken cancellationToken = default(CancellationToken));
+        Task SendAsync(MimeMessage message, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously send the specified messages.
@@ -30,14 +30,14 @@ namespace MailkitTools.Services
         /// <param name="messages">The collection of messages to send.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task SendAsync(IEnumerable<MimeMessage> messages, CancellationToken cancellationToken = default(CancellationToken));
+        Task SendAsync(IEnumerable<MimeMessage> messages, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Receive a collection of messages asynchronously.
         /// </summary>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task<IList<MimeMessage>> ReceiveAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<IList<MimeMessage>> ReceiveAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Event fired when an error occurs.
