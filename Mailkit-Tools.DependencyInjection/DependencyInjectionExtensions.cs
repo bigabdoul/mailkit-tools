@@ -33,5 +33,16 @@ namespace MailkitTools.DependencyInjection
         /// <returns>A reference to the specified <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddMailkitTools(this IServiceCollection services)
             => services.AddMailkitTools<DefaultEmailConfigurationProvider>();
+
+        /// <summary>
+        /// Adds MailkitTools services to the specified <see cref="IServiceCollection"/> using the
+        /// <see cref="DefaultEmailConfigurationProvider"/> implementation factory and the specified
+        /// <see cref="IEmailClientConfiguration"/> configuration.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+        /// <param name="config">The default email client configuration to add as a singleton service.</param>
+        /// <returns>A reference to the specified <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddMailkitTools(this IServiceCollection services, IEmailClientConfiguration config)
+            => services.AddSingleton(config).AddMailkitTools<DefaultEmailConfigurationProvider>();
     }
 }
