@@ -24,6 +24,14 @@ namespace MailkitTools.DependencyInjection
                 .AddTransient<IEmailClientService, EmailClientService>()
                 .AddTransient<IPop3ClientService, Pop3ClientService>();
         }
-        
+
+        /// <summary>
+        /// Adds MailkitTools services to the specified <see cref="IServiceCollection"/> using the
+        /// <see cref="DefaultEmailConfigurationProvider"/> implementation factory.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+        /// <returns>A reference to the specified <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection AddMailkitTools(this IServiceCollection services)
+            => services.AddMailkitTools<DefaultEmailConfigurationProvider>();
     }
 }
