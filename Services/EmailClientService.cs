@@ -52,8 +52,8 @@ namespace MailkitTools.Services
         /// <param name="message">The message to send.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public virtual async Task SendAsync(MimeMessage message, CancellationToken cancellationToken = default)
-            => await SendAsync(new MimeMessage[] { message }, cancellationToken);
+        public virtual Task SendAsync(MimeMessage message, CancellationToken cancellationToken = default)
+            => SendAsync(new MimeMessage[] { message }, cancellationToken);
 
         /// <summary>
         /// Asynchronously sends the specified messages.
