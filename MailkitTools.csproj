@@ -16,8 +16,10 @@
     <PackageTags>.net core, mailkit, tools, email, support, smtp, pop3</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.1.2</Version>
-    <PackageReleaseNotes>Lower target framework from netcoreapp3.1 to netstandard2.0</PackageReleaseNotes>
+    <Version>1.2.0</Version>
+    <PackageReleaseNotes>1.1.0: Lower target framework from netcoreapp3.1 to netstandard2.0
+1.2.0: Add simplified default email services.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -35,6 +37,13 @@
 
   <ItemGroup>
     <PackageReference Include="MailKit" Version="2.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
