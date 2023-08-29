@@ -9,7 +9,7 @@ namespace MailkitTools.Services
     /// <summary>
     /// Defines the contract required for an object that provides pre-configured e-mail client services.
     /// </summary>
-    public interface IConfiguredEmailService
+    public interface IConfiguredEmailService : IEmailClientService
     {
         /// <summary>
         /// Gets the last error that occured during an attempt to send messages.
