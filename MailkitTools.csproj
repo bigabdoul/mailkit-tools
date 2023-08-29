@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <RootNamespace>MailkitTools</RootNamespace>
     <Authors>Abdourahamane Kaba</Authors>
     <Company>Karfamsoft</Company>
@@ -20,11 +20,12 @@
     <PackageReleaseNotes>1.3.0 Extensive IMAP support for downloading headers and messages.
 1.2.0: Add simplified default email services.
 1.1.0: Lower target framework from netcoreapp3.1 to netstandard2.0</PackageReleaseNotes>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile></PackageReadmeFile>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netcoreapp2.0\MailkitTools.xml</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\MailkitTools.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,15 +37,12 @@
     <None Remove="test\**" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="MailKit" Version="2.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="MailKit" Version="4.1.0" />
   </ItemGroup>
 
 </Project>
