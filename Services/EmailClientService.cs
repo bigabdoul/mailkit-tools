@@ -5,6 +5,7 @@ using MimeKit;
 using MimeKit.Text;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +67,7 @@ namespace MailkitTools.Services
             IMailTransport client = null;
             try
             {
-                client = await CreateOutgoingMailClientAsync(cancellationToken);
+                client = await CreateOutgoingMailClientAsync(cancellationToken: cancellationToken);
                 foreach (var message in messages)
                 {
                     try
@@ -105,23 +106,18 @@ namespace MailkitTools.Services
             }
         }
 
-        /// <summary>
-        /// Determines the number of messages available on the server.
-        /// </summary>
-        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
-        /// <param name="certificateValidator">A callback function to validate the server certificate. Can be null.</param>
-        /// <returns></returns>
-        public async Task<int> CountMessagesAsync(CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
+        /// <inheritdoc/>
+        public async Task<int> CountMessagesAsync(SpecialFolder? folder = null, RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
         {
             IMailService client = null;
             try
             {
                 // create an incoming mail client and get the message count
-                client = await CreateIncomingMailClientAsync(cancellationToken, certificateValidator);
+                client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    await store.Inbox.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
-                    return store.Inbox.Count;
+                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    return ofolder.Count;
                 }
                 else if (client is IMailSpool spool)
                 {
@@ -139,19 +135,18 @@ namespace MailkitTools.Services
         }
 
         /// <inheritdoc/>
-        public virtual async Task<int> ReceiveHeadersAsync(Func<HeaderListInfo, Task<bool>> headersReceived, SpecialFolder? folder = null, 
-            int startIndex = 0, int endIndex = -1, CancellationToken cancellationToken = default, 
-            RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null)
+        public virtual async Task<int> ReceiveHeadersAsync(Func<HeaderListInfo, Task<bool>> headersReceived, SpecialFolder? folder = null,
+            int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback certificateValidator = null,
+            ITransferProgress progress = null, CancellationToken cancellationToken = default)
         {
             IMailService client = null;
             try
             {
-                client = await CreateIncomingMailClientAsync(cancellationToken, certificateValidator);
+                client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    var ofolder = folder == null ? store.Inbox : store.GetFolder(folder.Value);
-                    await ofolder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
-                    return await ofolder.ReceiveHeadersAsync(headersReceived, startIndex, endIndex, cancellationToken, progress);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    return await ofolder.ReceiveHeadersAsync(headersReceived, startIndex, endIndex, progress, cancellationToken);
                 }
                 else if (client is IMailSpool spool)
                 {
@@ -179,19 +174,19 @@ namespace MailkitTools.Services
         /// <returns></returns>
         /// <exception cref="NotSupportedException">The incoming mail client is not supported.</exception>
         public virtual Task<HeaderListInfo> ReceiveHeadersAsync(int index, SpecialFolder? folder = null, CancellationToken cancellationToken = default)
-            => ReceiveHeadersAsync(index, folder, cancellationToken, null, null);
+            => ReceiveHeadersAsync(index, folder, null, null, cancellationToken);
 
         /// <inheritdoc/>
-        public virtual async Task<HeaderListInfo> ReceiveHeadersAsync(int index, SpecialFolder? folder = null, CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null)
+        public virtual async Task<HeaderListInfo> ReceiveHeadersAsync(int index, SpecialFolder? folder = null, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null, CancellationToken cancellationToken = default)
         {
             IMailService client = null;
             try
             {
-                client = await CreateIncomingMailClientAsync(cancellationToken, certificateValidator);
+                client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    IMailFolder ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
-                    return await ofolder.ReceiveHeadersAsync(index, cancellationToken, progress);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    return await ofolder.ReceiveHeadersAsync(index, progress, cancellationToken);
                 }
                 else if (client is IMailSpool spool)
                 {
@@ -214,25 +209,24 @@ namespace MailkitTools.Services
 
         /// <inheritdoc/>
         public virtual Task<IList<MimeMessage>> ReceiveAsync(CancellationToken cancellationToken = default)
-            => ReceiveAsync(null, cancellationToken, null, null);
+            => ReceiveAsync(folder: null, certificateValidator: null, progress: null, cancellationToken);
 
         /// <inheritdoc/>
-        public virtual async Task<IList<MimeMessage>> ReceiveAsync(SpecialFolder? folder, CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null)
+        public virtual async Task<IList<MimeMessage>> ReceiveAsync(SpecialFolder? folder, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null, CancellationToken cancellationToken = default)
         {
             IList<MimeMessage> list = null;
             IMailService client = null;
             try
             {
-                client = await CreateIncomingMailClientAsync(cancellationToken, certificateValidator);
+                client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    var ofolder = folder == null ? store.Inbox : store.GetFolder(folder.Value);
-                    await ofolder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
-                    list = await ofolder.GetMessagesAsync(cancellationToken, progress);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    list = await ofolder.GetMessagesAsync(progress, cancellationToken);
                 }
                 else if (client is IMailSpool spool)
                 {
-                    list = await spool.GetMessagesAsync(cancellationToken, progress);
+                    list = await spool.GetMessagesAsync(progress, cancellationToken);
                 }
                 else
                 {
@@ -247,30 +241,86 @@ namespace MailkitTools.Services
         }
 
         /// <inheritdoc/>
-        public virtual Task<IMailService> CreateIncomingClientAsync(CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
-            => CreateIncomingMailClientAsync(cancellationToken, certificateValidator);
+        public virtual async Task<int> ReceiveAsync(Func<MimeMessage, int, int, Task<bool>> received, SpecialFolder? folder = null,
+            int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback certificateValidator = null,
+            ITransferProgress progress = null, CancellationToken cancellationToken = default)
+        {
+            IMailService client = null;
+            try
+            {
+                client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
+                if (client is IMailStore store)
+                {
+                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    return await ofolder.ReceiveMessagesAsync(received, startIndex, endIndex, progress, cancellationToken);
+                }
+                else if (client is IMailSpool spool)
+                {
+                    return await spool.ReceiveMessagesAsync(received, startIndex, endIndex, progress, cancellationToken);
+                }
+                else
+                {
+                    throw new NotSupportedException($"Client type '{client.GetType().FullName}' not supported.");
+                }
+            }
+            finally
+            {
+                await client.DisposeAsync(cancellationToken);
+            }
+        }
 
         /// <inheritdoc/>
-        public virtual Task<IMailTransport> CreateOutgoingClientAsync(CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
-            => CreateOutgoingMailClientAsync(cancellationToken, certificateValidator);
+        public virtual async Task<MimeMessage> ReceiveAsync(int index, SpecialFolder? folder = null, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+        {
+            IMailService client = null;
+            try
+            {
+                client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
+                if (client is IMailStore store)
+                {
+                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    return await ofolder.GetMessageAsync(index, cancellationToken, progress);
+                }
+                else if (client is IMailSpool spool)
+                {
+                    return await spool.GetMessageAsync(index, cancellationToken, progress);
+                }
+                else
+                {
+                    throw new NotSupportedException($"Client type '{client.GetType().FullName}' not supported.");
+                }
+            }
+            finally
+            {
+                await client.DisposeAsync(cancellationToken);
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual Task<IMailService> CreateIncomingClientAsync(RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
+            => CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
+
+        /// <inheritdoc/>
+        public virtual Task<IMailTransport> CreateOutgoingClientAsync(RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
+            => CreateOutgoingMailClientAsync(certificateValidator, cancellationToken);
 
         /// <summary>
         /// Asynchronously creates and returns a connected instance of the <see cref="ImapClient"/> class.
         /// </summary>
-        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        protected virtual Task<IMailService> CreateIncomingMailClientAsync(CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
-            => new ImapClient().ConnectAsync(Configuration, cancellationToken, certificateValidator);
+        protected virtual Task<IMailService> CreateIncomingMailClientAsync(RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
+            => new ImapClient().ConnectAsync(Configuration, certificateValidator, cancellationToken);
 
         /// <summary>
         /// Asynchronously creates and returns a connected instance of the <see cref="SmtpClient"/> class.
         /// </summary>
-        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        protected virtual async Task<IMailTransport> CreateOutgoingMailClientAsync(CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
-          => (IMailTransport)await new SmtpClient().ConnectAsync(Configuration, cancellationToken, certificateValidator);
+        protected virtual async Task<IMailTransport> CreateOutgoingMailClientAsync(RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
+          => (IMailTransport)await new SmtpClient().ConnectAsync(Configuration, certificateValidator, cancellationToken);
 
         #region static
 
@@ -383,6 +433,9 @@ namespace MailkitTools.Services
             return Success?.Invoke(new SendEventArgs(message)) ?? Task.CompletedTask;
         }
 
+#if NET6_0_OR_GREATER
+        [DoesNotReturn]
+#endif
         private void MailSpoolProgressReportingNotSupported()
         {
             throw new NotSupportedException($"A client of type {typeof(IMailSpool).FullName} " +

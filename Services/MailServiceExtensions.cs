@@ -43,17 +43,17 @@ namespace MailkitTools.Services
         /// </summary>
         /// <param name="client">The mail service client used to connect.</param>
         /// <param name="cfg">The configuration settings used to establish a connection.</param>
-        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public static async Task<IMailService> ConnectAsync(this IMailService client, IEmailClientConfiguration cfg, CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
+        public static async Task<IMailService> ConnectAsync(this IMailService client, IEmailClientConfiguration cfg, RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
         {
             client.ServerCertificateValidationCallback = certificateValidator ?? _certValidator;
 
             await client.ConnectAsync(cfg.Host, cfg.Port, cfg.UseSsl, cancellationToken);
 
             if (cfg.RequiresAuth)
-                await client.AuthenticateAsync(cfg.UserName, cfg.Password);
+                await client.AuthenticateAsync(cfg.UserName, cfg.Password, cancellationToken);
 
             return client;
         }
@@ -70,18 +70,17 @@ namespace MailkitTools.Services
         /// The upper, exclusive index at which to stop fetching headers. Falls back to the number
         /// of available headers, if zero, negative or higher than the number of available headers.
         /// </param>
-        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
-        /// <returns>A task that returns an integer representing the total number of messages in the inbox folder or the message spool.</returns>
-        /// <exception cref="NotSupportedException">
-        /// The incoming mail client is not supported, or <paramref name="progress"/> 
-        /// is not null and the client is an instance of <see cref="IMailSpool"/>.
-        /// </exception>
         /// <param name="progress">The progress reporting mechanism.</param>
-        public static async Task<int> ReceiveHeadersAsync(this IMailFolder folder, Func<HeaderListInfo, Task<bool>> headersReceived, 
-            int startIndex = 0, int endIndex = -1, CancellationToken cancellationToken = default, ITransferProgress progress = null)
+        /// <returns>A task that returns an integer representing the total number of message headers in the mail folder.</returns>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="startIndex"/> is strictly negative, or greater than or equal to the number of available messages.
+        /// </exception>
+        public static async Task<int> ReceiveHeadersAsync(this IMailFolder folder, Func<HeaderListInfo, Task<bool>> headersReceived,
+            int startIndex = 0, int endIndex = -1, ITransferProgress progress = null, CancellationToken cancellationToken = default)
         {
             if (!folder.IsOpen)
-                folder.Open(FolderAccess.ReadOnly);
+                await folder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
 
             var count = folder.Count; // the count may change as we download the headers, so dereference it
 
@@ -141,17 +140,13 @@ namespace MailkitTools.Services
         /// </summary>
         /// <param name="folder">The <see cref="IMailFolder"/> to use.</param>
         /// <param name="index">The index of the message.</param>
-        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="progress">The progress reporting mechanism.</param>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        /// <exception cref="NotSupportedException">
-        /// The incoming mail client is not supported, or <paramref name="progress"/> 
-        /// is not null and the client is an instance of <see cref="IMailSpool"/>.
-        /// </exception>
-        public static async Task<HeaderListInfo> ReceiveHeadersAsync(this IMailFolder folder, int index, CancellationToken cancellationToken = default, ITransferProgress progress = null)
+        public static async Task<HeaderListInfo> ReceiveHeadersAsync(this IMailFolder folder, int index, ITransferProgress progress = null, CancellationToken cancellationToken = default)
         {
             if (!folder.IsOpen)
-                folder.Open(FolderAccess.ReadOnly);
+                await folder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
 
             var hdrs = await folder.GetHeadersAsync(index, cancellationToken, progress);
             return new HeaderListInfo { MessageIndex = index, MessageCount = folder.Count, Headers = hdrs };
@@ -162,9 +157,9 @@ namespace MailkitTools.Services
         /// </summary>
         /// <param name="folder">The mailbox folder used to retrieve the messages.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
-        /// <param name="progress"></param>
+        /// <param name="progress">The progress reporting mechanism.</param>
         /// <returns></returns>
-        public static async Task<IList<MimeMessage>> GetMessagesAsync(this IMailFolder folder, CancellationToken cancellationToken = default, ITransferProgress progress = null)
+        public static async Task<IList<MimeMessage>> GetMessagesAsync(this IMailFolder folder, ITransferProgress progress = null, CancellationToken cancellationToken = default)
         {
             var list = new List<MimeMessage>();
             for (int i = 0; i < folder.Count; i++)
@@ -179,10 +174,10 @@ namespace MailkitTools.Services
         /// Asynchronously retrieve all messages from the specified spool.
         /// </summary>
         /// <param name="spool">An object that retrieves the messages from a mail spool.</param>
+        /// <param name="progress">The progress reporting mechanism.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
-        /// <param name="progress"></param>
         /// <returns></returns>
-        public static async Task<IList<MimeMessage>> GetMessagesAsync(this IMailSpool spool, CancellationToken cancellationToken = default, ITransferProgress progress = null)
+        public static async Task<IList<MimeMessage>> GetMessagesAsync(this IMailSpool spool, ITransferProgress progress = null, CancellationToken cancellationToken = default)
         {
             var list = new List<MimeMessage>();
             for (int i = 0; i < spool.Count; i++)
@@ -191,6 +186,91 @@ namespace MailkitTools.Services
                 list.Add(message);
             }
             return list;
+        }
+
+        /// <summary>
+        /// Asynchronously gets all messages from the specified mail folder.
+        /// </summary>
+        /// <param name="folder">The <see cref="IMailFolder"/> to use.</param>
+        /// <param name="messageReceived">
+        /// A callback function to invoke each time a message is received. Returning true cancels the operation gracefully.
+        /// </param>
+        /// <param name="startIndex">The zero-based lower index at which to start fetching messages.</param>
+        /// <param name="endIndex">
+        /// The upper, exclusive index at which to stop fetching messages. Falls back to the number
+        /// of available messages, if zero, negative or higher than the number of available messages.
+        /// </param>
+        /// <param name="progress">The progress reporting mechanism.</param>
+        /// <returns>A task that returns an integer representing the total number of messages in the specified mail folder.</returns>
+        /// <exception cref="NotSupportedException">
+        /// The incoming mail client is not supported, or <paramref name="progress"/> 
+        /// is not null and the client is an instance of <see cref="IMailSpool"/>.
+        /// </exception>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="startIndex"/> is strictly negative, or greater than or equal to the number of available messages.
+        /// </exception>
+        public static async Task<int> ReceiveMessagesAsync(this IMailFolder folder, Func<MimeMessage, int, int, Task<bool>> messageReceived,
+            int startIndex = 0, int endIndex = -1, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+        {
+            if (!folder.IsOpen)
+                await folder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
+
+            var count = folder.Count; // the count may change as we download the headers, so dereference it
+
+            if (startIndex < 0 || startIndex >= count)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+
+            if (endIndex <= 0 || endIndex >= count) endIndex = count;
+
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                var message = await folder.GetMessageAsync(i, cancellationToken, progress);
+                if (await messageReceived(message, i, count))
+                    break;
+            }
+
+            // the number of message fetched
+            return endIndex - startIndex;
+        }
+
+        /// <summary>
+        /// Asynchronously gets all messages from the specified mail spool.
+        /// </summary>
+        /// <param name="spool">The <see cref="IMailSpool"/> to use.</param>
+        /// <param name="messageReceived">
+        /// A callback function to invoke each time a message is received. Returning true cancels the operation gracefully.
+        /// </param>
+        /// <param name="startIndex">The zero-based lower index at which to start fetching messages.</param>
+        /// <param name="endIndex">
+        /// The upper, exclusive index at which to stop fetching messages. Falls back to the number
+        /// of available messages, if zero, negative or higher than the number of available messages.
+        /// </param>
+        /// <param name="progress">The progress reporting mechanism.</param>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="startIndex"/> is strictly negative, or greater than or equal to the number of available messages.
+        /// </exception>
+        public static async Task<int> ReceiveMessagesAsync(this IMailSpool spool, Func<MimeMessage, int, int, Task<bool>> messageReceived,
+            int startIndex = 0, int endIndex = -1, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+        {
+            var count = spool.Count; // the count may change as we download the headers, so dereference it
+
+            if (startIndex < 0 || startIndex >= count)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+
+            if (endIndex <= 0 || endIndex >= count) endIndex = count;
+
+            for (int i = startIndex; i < endIndex; i++)
+            {
+                var message = await spool.GetMessageAsync(i, cancellationToken, progress);
+                if (await messageReceived(message, i, count))
+                    break;
+            }
+
+            // the number of headers fetched
+            return endIndex - startIndex;
         }
 
         /// <summary>

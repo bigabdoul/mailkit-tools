@@ -13,7 +13,7 @@ namespace MailkitTools.Services
     public class Pop3ClientService : EmailClientService, IPop3ClientService
     {
         /// <summary>
-        /// If true, uses the base implementation of <see cref="CreateIncomingMailClientAsync(CancellationToken, RemoteCertificateValidationCallback)"/>, 
+        /// If true, uses the base implementation of <see cref="CreateIncomingMailClientAsync(RemoteCertificateValidationCallback, CancellationToken)"/>, 
         /// which uses the <see cref="ImapClient"/> by default. Otherwise, uses the <see cref="Pop3Client"/>.
         /// </summary>
         public bool UseImapClient { get; set; }
@@ -28,12 +28,12 @@ namespace MailkitTools.Services
         /// <summary>
         /// Asynchronously creates and returns a connected instance of the <see cref="Pop3Client"/> class.
         /// </summary>
-        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        protected override Task<IMailService> CreateIncomingMailClientAsync(CancellationToken cancellationToken = default, RemoteCertificateValidationCallback certificateValidator = null)
+        protected override Task<IMailService> CreateIncomingMailClientAsync(RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
           => UseImapClient ? 
-            base.CreateIncomingMailClientAsync(cancellationToken) : 
-            new Pop3Client().ConnectAsync(Configuration, cancellationToken, certificateValidator);
+            base.CreateIncomingMailClientAsync(cancellationToken: cancellationToken) : 
+            new Pop3Client().ConnectAsync(Configuration, certificateValidator, cancellationToken);
     }
 }

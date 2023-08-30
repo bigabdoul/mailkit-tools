@@ -87,14 +87,31 @@ namespace MailkitTools
         /// <returns></returns>
         public string ToFriendlyDate(bool toLocalTime = false)
         {
-            if (DateTimeOffset.TryParse(Date, out var d))
-            {
-                if (toLocalTime)
-                    d = d.ToLocalTime();
-                return d.Year != DateTime.Today.Year ? d.ToString("ddd, dd/MM/yyyy") : d.ToString("ddd, dd/MM");
-            }
-            return Date;
+            var d = NormalizedDate;
+            if (toLocalTime)
+                d = d.ToLocalTime();
+            return d.Year != DateTime.Today.Year ? d.ToString("ddd, dd/MM/yyyy") : d.ToString("ddd, dd/MM");
         }
+
+        /// <summary>
+        /// Removes "useless" characters - such as (UTC), (CEST) - from the end of the <see cref="Date"/> string.
+        /// </summary>
+        public DateTimeOffset NormalizedDate
+        {
+            get
+            {
+                if (!_normalizedDate.HasValue)
+                {
+                    var s = Regex.Replace(Date, @"[()\sA-Z]+$", string.Empty, RegexOptions.Compiled);
+                    if (DateTimeOffset.TryParse(s, out var result))
+                        _normalizedDate = result;
+                    else
+                        _normalizedDate = DateTimeOffset.MinValue;
+                }
+                return _normalizedDate.Value;
+            }
+        }
+        private DateTimeOffset? _normalizedDate;
 
         /// <summary>
         /// Extracts and returns the email address contained in the <see cref="From"/> property value.
