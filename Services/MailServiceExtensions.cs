@@ -340,11 +340,19 @@ namespace MailkitTools.Services
             (client as IDisposable)?.Dispose();
         }
 
-        internal static async Task<IMailFolder> OpenFolderAsync(this IMailStore store, SpecialFolder? folder, 
-            FolderAccess access = FolderAccess.ReadOnly, CancellationToken cancellation = default)
+        /// <summary>
+        /// Open and return the specified or default (inbox) folder.
+        /// </summary>
+        /// <param name="store">The mail store to use.</param>
+        /// <param name="folder">The folder to open.</param>
+        /// <param name="access">The desired folder access. Defaults to <see cref="FolderAccess.ReadOnly"/>.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        public static async Task<IMailFolder> OpenFolderAsync(this IMailStore store, SpecialFolder? folder, 
+            FolderAccess access = FolderAccess.ReadOnly, CancellationToken cancellationToken = default)
         {
             var ofolder = folder == null ? store.Inbox : store.GetFolder(folder.Value);
-            await ofolder.OpenAsync(access, cancellation);
+            if (!ofolder.IsOpen) await ofolder.OpenAsync(access, cancellationToken);
             return ofolder;
         }
     }

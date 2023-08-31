@@ -116,7 +116,7 @@ namespace MailkitTools.Services
                 client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellationToken: cancellationToken);
                     return ofolder.Count;
                 }
                 else if (client is IMailSpool spool)
@@ -145,7 +145,7 @@ namespace MailkitTools.Services
                 client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellationToken: cancellationToken);
                     return await ofolder.ReceiveHeadersAsync(headersReceived, startIndex, endIndex, progress, cancellationToken);
                 }
                 else if (client is IMailSpool spool)
@@ -185,7 +185,7 @@ namespace MailkitTools.Services
                 client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellationToken: cancellationToken);
                     return await ofolder.ReceiveHeadersAsync(index, progress, cancellationToken);
                 }
                 else if (client is IMailSpool spool)
@@ -221,7 +221,7 @@ namespace MailkitTools.Services
                 client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellationToken: cancellationToken);
                     list = await ofolder.GetMessagesAsync(progress, cancellationToken);
                 }
                 else if (client is IMailSpool spool)
@@ -251,7 +251,7 @@ namespace MailkitTools.Services
                 client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellationToken: cancellationToken);
                     return await ofolder.ReceiveMessagesAsync(received, startIndex, endIndex, progress, cancellationToken);
                 }
                 else if (client is IMailSpool spool)
@@ -278,7 +278,7 @@ namespace MailkitTools.Services
                 client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
                 if (client is IMailStore store)
                 {
-                    var ofolder = await store.OpenFolderAsync(folder, cancellation: cancellationToken);
+                    var ofolder = await store.OpenFolderAsync(folder, cancellationToken: cancellationToken);
                     return await ofolder.GetMessageAsync(index, cancellationToken, progress);
                 }
                 else if (client is IMailSpool spool)
