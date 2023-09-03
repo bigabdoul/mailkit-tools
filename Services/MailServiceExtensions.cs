@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net.Security;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,7 +45,7 @@ namespace MailkitTools.Services
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public static async Task<IMailService> ConnectAsync(this IMailService client, IEmailClientConfiguration cfg, RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
+        public static async Task<IMailService> ConnectAsync(this IMailService client, IEmailClientConfiguration cfg, RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default)
         {
             client.ServerCertificateValidationCallback = certificateValidator ?? _certValidator;
 
@@ -77,17 +76,18 @@ namespace MailkitTools.Services
         /// <paramref name="startIndex"/> is strictly negative, or greater than or equal to the number of available messages.
         /// </exception>
         public static async Task<int> ReceiveHeadersAsync(this IMailFolder folder, Func<HeaderListInfo, Task<bool>> headersReceived,
-            int startIndex = 0, int endIndex = -1, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+            int startIndex = 0, int endIndex = -1, ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
             if (!folder.IsOpen)
                 await folder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
 
-            var count = folder.Count; // the count may change as we download the headers, so dereference it
+#if NETSTANDARD2_0
+            var count = endIndex - startIndex;
 
-            if (startIndex < 0 || startIndex >= count)
+            if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
 
-            if (endIndex <= 0 || endIndex >= count) endIndex = count;
+            if (endIndex < 0 || endIndex >= count) endIndex = count;
 
             for (int i = startIndex; i < endIndex; i++)
             {
@@ -95,9 +95,25 @@ namespace MailkitTools.Services
                 if (await headersReceived(new HeaderListInfo { MessageIndex = i, MessageCount = count, Headers = headers }))
                     break;
             }
+#elif NET6_0_OR_GREATER
+            var summaries = await folder.FetchAsync(startIndex, endIndex, MessageSummaryItems.Headers | MessageSummaryItems.UniqueId, cancellationToken);
+            var count = summaries.Count;
 
+            for (int i = 0; i < summaries.Count; i++)
+            {
+                var hli = new HeaderListInfo
+                {
+                    MessageIndex = startIndex + i,
+                    MessageCount = count,
+                    UniqueId = summaries[i].UniqueId.Id,
+                    Headers = summaries[i].Headers
+                };
+                if (await headersReceived(hli))
+                    break;
+            }
+#endif
             // the number of headers fetched
-            return endIndex - startIndex;
+            return count;
         }
 
         /// <summary>
@@ -143,7 +159,7 @@ namespace MailkitTools.Services
         /// <param name="progress">The progress reporting mechanism.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public static async Task<HeaderListInfo> ReceiveHeadersAsync(this IMailFolder folder, int index, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+        public static async Task<HeaderListInfo> ReceiveHeadersAsync(this IMailFolder folder, int index, ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
             if (!folder.IsOpen)
                 await folder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
@@ -159,7 +175,7 @@ namespace MailkitTools.Services
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="progress">The progress reporting mechanism.</param>
         /// <returns></returns>
-        public static async Task<IList<MimeMessage>> GetMessagesAsync(this IMailFolder folder, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+        public static async Task<IList<MimeMessage>> GetMessagesAsync(this IMailFolder folder, ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
             var list = new List<MimeMessage>();
             for (int i = 0; i < folder.Count; i++)
@@ -177,7 +193,7 @@ namespace MailkitTools.Services
         /// <param name="progress">The progress reporting mechanism.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public static async Task<IList<MimeMessage>> GetMessagesAsync(this IMailSpool spool, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+        public static async Task<IList<MimeMessage>> GetMessagesAsync(this IMailSpool spool, ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
             var list = new List<MimeMessage>();
             for (int i = 0; i < spool.Count; i++)
@@ -211,7 +227,7 @@ namespace MailkitTools.Services
         /// <paramref name="startIndex"/> is strictly negative, or greater than or equal to the number of available messages.
         /// </exception>
         public static async Task<int> ReceiveMessagesAsync(this IMailFolder folder, Func<MimeMessage, int, int, Task<bool>> messageReceived,
-            int startIndex = 0, int endIndex = -1, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+            int startIndex = 0, int endIndex = -1, ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
             if (!folder.IsOpen)
                 await folder.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
@@ -253,7 +269,7 @@ namespace MailkitTools.Services
         /// <paramref name="startIndex"/> is strictly negative, or greater than or equal to the number of available messages.
         /// </exception>
         public static async Task<int> ReceiveMessagesAsync(this IMailSpool spool, Func<MimeMessage, int, int, Task<bool>> messageReceived,
-            int startIndex = 0, int endIndex = -1, ITransferProgress progress = null, CancellationToken cancellationToken = default)
+            int startIndex = 0, int endIndex = -1, ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
             var count = spool.Count; // the count may change as we download the headers, so dereference it
 
@@ -334,10 +350,10 @@ namespace MailkitTools.Services
         /// <param name="client">The mail service client to disconnect and dispose. Can be null.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        public static async Task DisposeAsync(this IMailService client, CancellationToken cancellationToken = default)
+        public static async Task DisposeAsync(this IMailService? client, CancellationToken cancellationToken = default)
         {
             await (client?.DisconnectAsync(true, cancellationToken) ?? Task.CompletedTask);
-            (client as IDisposable)?.Dispose();
+            ((IDisposable?)client)?.Dispose();
         }
 
         /// <summary>

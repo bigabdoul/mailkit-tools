@@ -13,6 +13,6 @@ namespace MailkitTools.Services
         /// </summary>
         /// <param name="cancellationToken">A token to cancel a running task.</param>
         /// <returns></returns>
-        Task<IEmailClientConfiguration> GetConfigurationAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<IEmailClientConfiguration> GetConfigurationAsync(CancellationToken cancellationToken = default);
     }
 }

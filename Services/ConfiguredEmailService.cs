@@ -17,7 +17,7 @@ namespace MailkitTools.Services
     {
         #region fields
 
-        private Exception _lastError;
+        private Exception? _lastError;
 
         #endregion
 
@@ -45,7 +45,7 @@ namespace MailkitTools.Services
         #region properties
 
         /// <inheritdoc/>
-        public Exception LastError => _lastError;
+        public Exception? LastError => _lastError;
 
         #endregion
 

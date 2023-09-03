@@ -43,7 +43,7 @@ namespace MailkitTools.Services
         /// <param name="certificateValidator">A callback function to validate the server certificate. Can be null.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task<int> CountMessagesAsync(SpecialFolder? folder = null, RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default);
+        Task<int> CountMessagesAsync(SpecialFolder? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously receives all of messages from the inbox or mail spool.
@@ -61,7 +61,7 @@ namespace MailkitTools.Services
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">The incoming mail client is not supported.</exception>
-        Task<IList<MimeMessage>> ReceiveAsync(SpecialFolder? folder, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null, CancellationToken cancellationToken = default);
+        Task<IList<MimeMessage>> ReceiveAsync(SpecialFolder? folder, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously get the specified message. If you intend to fetch more than one message, use the extension method 
@@ -74,7 +74,7 @@ namespace MailkitTools.Services
         /// <param name="progress">The progress reporting mechanism.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task<MimeMessage> ReceiveAsync(int index, SpecialFolder? folder = null, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null, CancellationToken cancellationToken = default);
+        Task<MimeMessage> ReceiveAsync(int index, SpecialFolder? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously get all messages.
@@ -93,8 +93,8 @@ namespace MailkitTools.Services
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
         Task<int> ReceiveAsync(Func<MimeMessage, int, int, Task<bool>> received, SpecialFolder? folder = null,
-            int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback certificateValidator = null,
-            ITransferProgress progress = null, CancellationToken cancellationToken = default);
+            int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback? certificateValidator = null,
+            ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously get all message headers.
@@ -116,7 +116,7 @@ namespace MailkitTools.Services
         /// The incoming mail client is not supported, or <paramref name="progress"/> 
         /// is not null and the client is an instance of <see cref="IMailSpool"/>.
         /// </exception>
-        Task<int> ReceiveHeadersAsync(Func<HeaderListInfo, Task<bool>> received, SpecialFolder? folder = null, int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null, CancellationToken cancellationToken = default);
+        Task<int> ReceiveHeadersAsync(Func<HeaderListInfo, Task<bool>> received, SpecialFolder? folder = null, int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously get the specified message headers. If you intend to fetch the headers of more than one message, use the extension method 
@@ -133,7 +133,7 @@ namespace MailkitTools.Services
         /// The incoming mail client is not supported, or <paramref name="progress"/> 
         /// is not null and the client is an instance of <see cref="IMailSpool"/>.
         /// </exception>
-        Task<HeaderListInfo> ReceiveHeadersAsync(int index, SpecialFolder? folder = null, RemoteCertificateValidationCallback certificateValidator = null, ITransferProgress progress = null, CancellationToken cancellationToken = default);
+        Task<HeaderListInfo> ReceiveHeadersAsync(int index, SpecialFolder? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously creates and returns a connected instance of the <see cref="ImapClient"/> class.
@@ -141,7 +141,7 @@ namespace MailkitTools.Services
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task<IMailService> CreateIncomingClientAsync(RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default);
+        Task<IMailService> CreateIncomingClientAsync(RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously creates and returns a connected instance of the <see cref="SmtpClient"/> class.
@@ -149,7 +149,7 @@ namespace MailkitTools.Services
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task<IMailTransport> CreateOutgoingClientAsync(RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default);
+        Task<IMailTransport> CreateOutgoingClientAsync(RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Event fired when an error occurs.

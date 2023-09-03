@@ -41,7 +41,7 @@ namespace MailkitTools
         /// <summary>
         /// Gets the error that occured.
         /// </summary>
-        public Exception Error { get; }
+        public Exception? Error { get; }
 
         /// <summary>
         /// Gets the messages that were or weren't sent.

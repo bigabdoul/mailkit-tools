@@ -31,7 +31,8 @@ namespace MailkitTools.Services
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        protected override Task<IMailService> CreateIncomingMailClientAsync(RemoteCertificateValidationCallback certificateValidator = null, CancellationToken cancellationToken = default)
+        protected override Task<IMailService> CreateIncomingMailClientAsync(RemoteCertificateValidationCallback? certificateValidator = null, 
+            CancellationToken cancellationToken = default)
           => UseImapClient ? 
             base.CreateIncomingMailClientAsync(cancellationToken: cancellationToken) : 
             new Pop3Client().ConnectAsync(Configuration, certificateValidator, cancellationToken);

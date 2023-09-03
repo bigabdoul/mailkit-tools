@@ -8,7 +8,7 @@ namespace MailkitTools
         /// <summary>
         /// The host machine (server) name or IP address.
         /// </summary>
-        string Host { get; set; }
+        string? Host { get; set; }
 
         /// <summary>
         /// The server port to connect to.
@@ -23,12 +23,12 @@ namespace MailkitTools
         /// <summary>
         /// The user name to connect with.
         /// </summary>
-        string UserName { get; set; }
+        string? UserName { get; set; }
 
         /// <summary>
         /// The user password to use for connection.
         /// </summary>
-        string Password { get; set; }
+        string? Password { get; set; }
 
         /// <summary>
         /// Does the server require authentication?

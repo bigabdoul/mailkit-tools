@@ -14,7 +14,7 @@ namespace MailkitTools.Services
         /// <summary>
         /// Gets the last error that occured during an attempt to send messages.
         /// </summary>
-        Exception LastError { get; }
+        Exception? LastError { get; }
 
         /// <summary>
         /// Asynchronously send the specified message.

@@ -20,64 +20,69 @@ namespace MailkitTools
         public int MessageCount { get; set; }
 
         /// <summary>
+        /// The message's unique identifier.
+        /// </summary>
+        public uint UniqueId { get; set; }
+
+        /// <summary>
         /// The message headers.
         /// </summary>
-        public HeaderList Headers { get; set; }
+        public HeaderList? Headers { get; set; }
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.MessageId"/> header field.
         /// </summary>
-        public string MessageId { get => Headers[HeaderId.MessageId]; }
+        public string MessageId => Headers?[HeaderId.MessageId]?.TrimStart('<').TrimEnd('>') ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.Date"/> header field.
         /// </summary>
-        public string Date { get => Headers[HeaderId.Date]; }
+        public string Date => Headers?[HeaderId.Date] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.From"/> header field.
         /// </summary>
-        public string From { get => Headers[HeaderId.From]; }
+        public string From => Headers?[HeaderId.From] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.To"/> header field.
         /// </summary>
-        public string To { get => Headers[HeaderId.To]; }
+        public string To => Headers?[HeaderId.To] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.Cc"/> header field.
         /// </summary>
-        public string Cc { get => Headers[HeaderId.Cc]; }
+        public string Cc => Headers?[HeaderId.Cc] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.Subject"/> header field.
         /// </summary>
-        public string Subject { get => Headers[HeaderId.Subject]; }
+        public string Subject => Headers?[HeaderId.Subject] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.ReturnPath"/> header field.
         /// </summary>
-        public string ReturnPath { get => Headers[HeaderId.ReturnPath]; }
+        public string ReturnPath => Headers?[HeaderId.ReturnPath] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.ContentType"/> header field.
         /// </summary>
-        public string ContentType { get => Headers[HeaderId.ContentType]; }
+        public string ContentType => Headers?[HeaderId.ContentType] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.ContentLanguage"/> header field.
         /// </summary>
-        public string ContentLanguage { get => Headers[HeaderId.ContentLanguage]; }
+        public string ContentLanguage => Headers?[HeaderId.ContentLanguage] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.MimeVersion"/> header field.
         /// </summary>
-        public string MimeVersion { get => Headers[HeaderId.MimeVersion]; }
+        public string MimeVersion => Headers?[HeaderId.MimeVersion] ?? string.Empty;
 
         /// <summary>
         /// Gets the value of the <see cref="HeaderId.XMailer"/> header field.
         /// </summary>
-        public string XMailer { get => Headers[HeaderId.XMailer]; }
+        public string XMailer => Headers?[HeaderId.XMailer] ?? string.Empty;
 
         /// <summary>
         /// Attempts to parse and return the <see cref="Date"/> 
@@ -122,10 +127,10 @@ namespace MailkitTools
             {
                 if (_fromAddress != null) return _fromAddress;
                 ParseAddressName();
-                return _fromAddress;
+                return _fromAddress ?? string.Empty;
             }
         }
-        private string _fromAddress;
+        private string? _fromAddress;
 
         /// <summary>
         /// Extracts and returns the name contained in the <see cref="From"/> property value.
@@ -136,10 +141,10 @@ namespace MailkitTools
             {
                 if (_fromName != null) return _fromName;
                 ParseAddressName();
-                return _fromName;
+                return _fromName ?? string.Empty;
             }
         }
-        private string _fromName;
+        private string? _fromName;
 
         /// <summary>
         /// Returns the <see cref="FromName"/>, or <see cref="FromAddress"/> 
