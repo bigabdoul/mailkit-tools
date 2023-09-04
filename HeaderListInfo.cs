@@ -126,7 +126,7 @@ namespace MailkitTools
             get
             {
                 if (_fromAddress != null) return _fromAddress;
-                ParseAddressName();
+                (_toName, _toAddress) = ParseNameEmail(From);
                 return _fromAddress ?? string.Empty;
             }
         }
@@ -140,11 +140,39 @@ namespace MailkitTools
             get
             {
                 if (_fromName != null) return _fromName;
-                ParseAddressName();
+                (_fromName, _fromAddress) = ParseNameEmail(From);
                 return _fromName ?? string.Empty;
             }
         }
         private string? _fromName;
+
+        /// <summary>
+        /// Extracts and returns the email address contained in the <see cref="To"/> property value.
+        /// </summary>
+        public string ToAddress
+        {
+            get
+            {
+                if (_toAddress != null) return _toAddress;
+                (_toName, _toAddress) = ParseNameEmail(To);
+                return _toAddress ?? string.Empty;
+            }
+        }
+        private string? _toAddress;
+
+        /// <summary>
+        /// Extracts and returns the name contained in the <see cref="To"/> property value.
+        /// </summary>
+        public string ToName
+        {
+            get
+            {
+                if (_toName != null) return _toName;
+                (_toName, _toAddress) = ParseNameEmail(To);
+                return _toName ?? string.Empty;
+            }
+        }
+        private string? _toName;
 
         /// <summary>
         /// Returns the <see cref="FromName"/>, or <see cref="FromAddress"/> 
@@ -152,18 +180,22 @@ namespace MailkitTools
         /// </summary>
         public string FromNameOrAddress => string.IsNullOrWhiteSpace(FromName) ? FromAddress : FromName;
 
-        private void ParseAddressName()
+        private static (string? name, string? email) ParseNameEmail(string text)
         {
             // John Doe <john.doe@example.com>
             // <jane.fondue@example.com>
             // "Maurice Jackson" <mauricejackson@example.com>
             // user977@example.com
-            var match = Regex.Match(From, @"(?<name>[^<]+)?<(?<email>[^>]+)|(?<email>.+)", RegexOptions.Compiled);
+            var match = Regex.Match(text, @"(?<name>[^<]+)?<(?<email>[^>]+)|(?<email>.+)", RegexOptions.Compiled);
             if (match.Success)
             {
-                _fromName = match.Groups["name"].Value.Trim(new char[] { ' ', '"' });
-                _fromAddress = match.Groups["email"].Value.Trim();
+                var name = match.Groups["name"].Value.Trim(new char[] { ' ', '"' });
+                var addr = match.Groups["email"].Value.Trim();
+
+                return (name, addr);
             }
+
+            return (null, null);
         }
     }
 }
