@@ -90,7 +90,7 @@ namespace MailkitTools
         /// </summary>
         /// <param name="toLocalTime">true to convert the parsed date to the local time; otherwise, false.</param>
         /// <returns></returns>
-        public string ToFriendlyDate(bool toLocalTime = false)
+        public string GetFriendlyDate(bool toLocalTime = false)
         {
             var d = NormalizedDate;
             if (toLocalTime)
