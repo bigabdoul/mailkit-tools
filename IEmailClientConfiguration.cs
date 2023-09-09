@@ -34,5 +34,10 @@ namespace MailkitTools
         /// Does the server require authentication?
         /// </summary>
         bool RequiresAuth { get; set; }
+
+        /// <summary>
+        /// Determines whether to remove the OAuth2 authentication mechanism.
+        /// </summary>
+        bool RemoveOAuth2 { get; set; }
     }
 }

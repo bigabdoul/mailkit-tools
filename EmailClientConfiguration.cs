@@ -41,5 +41,8 @@ namespace MailkitTools
         /// Does the server require authentication?
         /// </summary>
         public bool RequiresAuth { get; set; }
+
+        /// <inheritdoc/>
+        public bool RemoveOAuth2 { get; set; }
     }
 }

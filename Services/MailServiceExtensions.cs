@@ -52,6 +52,9 @@ namespace MailkitTools.Services
 
             await client.ConnectAsync(cfg.Host, cfg.Port, cfg.UseSsl, cancellationToken);
 
+            if (cfg.RemoveOAuth2)
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+
             if (cfg.RequiresAuth)
                 await client.AuthenticateAsync(cfg.UserName, cfg.Password, cancellationToken);
 
