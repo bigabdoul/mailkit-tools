@@ -33,22 +33,22 @@ namespace MailkitTools
         /// <summary>
         /// Gets the folder name.
         /// </summary>
-        public string Name { get; } = default!;
+        public string Name { get; set; } = default!;
 
         /// <summary>
         /// Gets the total number of messages in the folder.
         /// </summary>
-        public int Count { get; }
+        public int Count { get; set; }
 
         /// <summary>
         /// Gets the number of unread messages in the folder.
         /// </summary>
-        public int Unread { get; }
+        public int Unread { get; set; }
 
         /// <summary>
         /// Gets the number of recently delivered messages in the folder.
         /// </summary>
-        public int Recent { get; }
+        public int Recent { get; set; }
 
         /// <summary>
         /// Gets or sets the folder's display name.
