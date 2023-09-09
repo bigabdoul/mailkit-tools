@@ -1,4 +1,5 @@
 using MailKit;
+using MailKit.Net.Imap;
 using MimeKit;
 using System;
 using System.Collections.Generic;
@@ -130,7 +131,7 @@ namespace MailkitTools.Services
         /// </param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        public static async Task<int> ReceiveHeadersAsync(this IMailSpool spool, Func<HeaderListInfo, Task<bool>> headersReceived, 
+        public static async Task<int> ReceiveHeadersAsync(this IMailSpool spool, Func<HeaderListInfo, Task<bool>> headersReceived,
             int startIndex = 0, int endIndex = -1, CancellationToken cancellationToken = default)
         {
             var count = spool.Count; // the count may change as we download the headers, so dereference it
@@ -364,12 +365,52 @@ namespace MailkitTools.Services
         /// <param name="access">The desired folder access. Defaults to <see cref="FolderAccess.ReadOnly"/>.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns></returns>
-        public static async Task<IMailFolder> OpenFolderAsync(this IMailStore store, SpecialFolder? folder, 
+        public static async Task<IMailFolder> OpenFolderAsync(this IMailStore store, string? folder,
             FolderAccess access = FolderAccess.ReadOnly, CancellationToken cancellationToken = default)
         {
-            var ofolder = folder == null ? store.Inbox : store.GetFolder(folder.Value);
+            var ofolder = folder == null ? store.Inbox : store.GetFolder(folder, cancellationToken);
             if (!ofolder.IsOpen) await ofolder.OpenAsync(access, cancellationToken);
             return ofolder;
+        }
+
+        /// <summary>
+        /// Connects to the mail server identified by <paramref name="cfg"/>,
+        /// and retrieves all subfolders from the first personal namespace.
+        /// </summary>
+        /// <param name="clt">The IMAP client to use.</param>
+        /// <param name="cfg">The configuration settings used to establish a connection.</param>
+        /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<MailFolderInfo>> GetFoldersAsync(this ImapClient clt, IEmailClientConfiguration cfg,
+            RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default)
+        {
+            if (!clt.IsConnected)
+                _ = await clt.ConnectAsync(cfg, certificateValidator, cancellationToken).ConfigureAwait(false);
+
+            var personal = clt.GetFolder(clt.PersonalNamespaces[0]);
+            var list = new List<MailFolderInfo>();
+            
+            foreach (var f in personal.GetSubfolders(cancellationToken: cancellationToken))
+            {
+                await f.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
+                list.Add(new MailFolderInfo(f.Name, f.Count, f.Unread, f.Recent) { Ordinal = GetOrdinal(f.Name) });
+                await f.CloseAsync(cancellationToken: cancellationToken);
+            }
+
+            list.Sort();
+            return list.ToArray();
+
+            static int GetOrdinal(string name)
+            {
+                name = name.ToUpperInvariant();
+                if (name.Contains("INBOX")) return 0;
+                if (name.Contains("JUNK") || name.Contains("SPAM")) return 1;
+                if (name.Contains("DRAFTS")) return 2;
+                if (name.Contains("SENT")) return 3;
+                if (name.Contains("DELETED") || name.Contains("TRASH")) return 4;
+                return 5;
+            }
         }
     }
 }
