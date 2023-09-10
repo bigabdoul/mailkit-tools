@@ -109,7 +109,7 @@ namespace MailkitTools.Services
         }
 
         /// <inheritdoc/>
-        public async Task<int> CountMessagesAsync(SpecialFolder? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default)
+        public async Task<int> CountMessagesAsync(string? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default)
         {
             IMailService? client = null;
             try
@@ -137,7 +137,7 @@ namespace MailkitTools.Services
         }
 
         /// <inheritdoc/>
-        public virtual async Task<int> ReceiveHeadersAsync(Func<HeaderListInfo, Task<bool>> received, SpecialFolder? folder = null,
+        public virtual async Task<int> ReceiveHeadersAsync(Func<HeaderListInfo, Task<bool>> received, string? folder = null,
             int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback? certificateValidator = null,
             ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
@@ -175,11 +175,11 @@ namespace MailkitTools.Services
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">The incoming mail client is not supported.</exception>
-        public virtual Task<HeaderListInfo> ReceiveHeadersAsync(int index, SpecialFolder? folder = null, CancellationToken cancellationToken = default)
+        public virtual Task<HeaderListInfo> ReceiveHeadersAsync(int index, string? folder = null, CancellationToken cancellationToken = default)
             => ReceiveHeadersAsync(index, folder, null, null, cancellationToken);
 
         /// <inheritdoc/>
-        public virtual async Task<HeaderListInfo> ReceiveHeadersAsync(int index, SpecialFolder? folder = null, 
+        public virtual async Task<HeaderListInfo> ReceiveHeadersAsync(int index, string? folder = null, 
             RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
             IMailService? client = null;
@@ -215,7 +215,7 @@ namespace MailkitTools.Services
             => ReceiveAsync(folder: null, certificateValidator: null, progress: null, cancellationToken);
 
         /// <inheritdoc/>
-        public virtual async Task<IList<MimeMessage>> ReceiveAsync(SpecialFolder? folder, 
+        public virtual async Task<IList<MimeMessage>> ReceiveAsync(string? folder, 
             RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, 
             CancellationToken cancellationToken = default)
         {
@@ -246,7 +246,7 @@ namespace MailkitTools.Services
         }
 
         /// <inheritdoc/>
-        public virtual async Task<int> ReceiveAsync(Func<MimeMessage, int, int, Task<bool>> received, SpecialFolder? folder = null,
+        public virtual async Task<int> ReceiveAsync(Func<MimeMessage, int, int, Task<bool>> received, string? folder = null,
             int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback? certificateValidator = null,
             ITransferProgress? progress = null, CancellationToken cancellationToken = default)
         {
@@ -275,7 +275,7 @@ namespace MailkitTools.Services
         }
 
         /// <inheritdoc/>
-        public virtual async Task<MimeMessage> ReceiveAsync(int index, SpecialFolder? folder = null, 
+        public virtual async Task<MimeMessage> ReceiveAsync(int index, string? folder = null, 
             RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, 
             CancellationToken cancellationToken = default)
         {
@@ -303,6 +303,28 @@ namespace MailkitTools.Services
             finally
             {
                 await _client.DisposeAsync(cancellationToken);
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual async Task<MimeMessage> ReceiveAsync(UniqueId id, string? folder = null,
+            RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (_client is null || _client.IsConnected == false)
+            {
+                await _client.DisposeAsync(cancellationToken);
+                _client = await CreateIncomingMailClientAsync(certificateValidator, cancellationToken);
+            }
+            if (_client is ImapClient clt)
+            {
+                var fld = await clt.GetFolderAsync(folder, cancellationToken);
+                await fld.OpenAsync(FolderAccess.ReadOnly, cancellationToken);
+                return await fld.GetMessageAsync(id, cancellationToken);
+            }
+            else
+            {
+                throw new NotSupportedException($"Client type '{_client.GetType().FullName}' not supported.");
             }
         }
 

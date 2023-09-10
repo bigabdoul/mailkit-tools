@@ -39,11 +39,11 @@ namespace MailkitTools.Services
         /// <summary>
         /// Determines the number of messages available on the server.
         /// </summary>
-        /// <param name="folder">The special folder to use. If null, defaults to the inbox.</param>
+        /// <param name="folder">The folder to use. If null, defaults to the inbox.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate. Can be null.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task<int> CountMessagesAsync(SpecialFolder? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default);
+        Task<int> CountMessagesAsync(string? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously receives all of messages from the inbox or mail spool.
@@ -55,13 +55,13 @@ namespace MailkitTools.Services
         /// <summary>
         /// Asynchronously receives all messages from the specified folder.
         /// </summary>
-        /// <param name="folder">The special folder to use. If null, defaults to the inbox.</param>
+        /// <param name="folder">The folder to use. If null, defaults to the inbox.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate. Can be null.</param>
         /// <param name="progress">The progress reporting mechanism.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">The incoming mail client is not supported.</exception>
-        Task<IList<MimeMessage>> ReceiveAsync(SpecialFolder? folder, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
+        Task<IList<MimeMessage>> ReceiveAsync(string? folder, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously get the specified message. If you intend to fetch more than one message, use the extension method 
@@ -69,12 +69,23 @@ namespace MailkitTools.Services
         /// after creating an instance of the <see cref="IMailService"/> client (see <see cref="CreateIncomingClientAsync(RemoteCertificateValidationCallback, CancellationToken)"/>.
         /// </summary>
         /// <param name="index">The index of the message.</param>
-        /// <param name="folder">The special folder to use. If null, defaults to the inbox.</param>
+        /// <param name="folder">The folder to use. If null, defaults to the inbox.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
         /// <param name="progress">The progress reporting mechanism.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task<MimeMessage> ReceiveAsync(int index, SpecialFolder? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
+        Task<MimeMessage> ReceiveAsync(int index, string? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Asynchronously get the message identified by its <see cref="UniqueId"/>.
+        /// </summary>
+        /// <param name="id">The unique identifier of the message.</param>
+        /// <param name="folder">The folder to use. If null, defaults to the inbox.</param>
+        /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
+        /// <param name="progress">The progress reporting mechanism.</param>
+        /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
+        /// <returns></returns>
+        Task<MimeMessage> ReceiveAsync(UniqueId id, string? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously get all messages.
@@ -82,7 +93,7 @@ namespace MailkitTools.Services
         /// <param name="received">
         /// A callback function to invoke each time a message is received. Returning true cancels the operation gracefully.
         /// </param>
-        /// <param name="folder">The special folder to use. If null, defaults to the inbox.</param>
+        /// <param name="folder">The folder to use. If null, defaults to the inbox.</param>
         /// <param name="startIndex">The zero-based lower index at which to start fetching messages.</param>
         /// <param name="endIndex">
         /// The upper, exclusive index at which to stop fetching messages. Falls back to the number
@@ -92,7 +103,7 @@ namespace MailkitTools.Services
         /// <param name="progress">The progress reporting mechanism.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <returns></returns>
-        Task<int> ReceiveAsync(Func<MimeMessage, int, int, Task<bool>> received, SpecialFolder? folder = null,
+        Task<int> ReceiveAsync(Func<MimeMessage, int, int, Task<bool>> received, string? folder = null,
             int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback? certificateValidator = null,
             ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
@@ -102,7 +113,7 @@ namespace MailkitTools.Services
         /// <param name="received">
         /// A callback function to invoke each headers of a message are received. Returning true cancels the operation gracefully.
         /// </param>
-        /// <param name="folder">The special folder to use. If null, defaults to the inbox.</param>
+        /// <param name="folder">The folder to use. If null, defaults to the inbox.</param>
         /// <param name="startIndex">The zero-based lower index at which to start fetching headers.</param>
         /// <param name="endIndex">
         /// The upper, exclusive index at which to stop fetching headers. Falls back to the number
@@ -116,7 +127,7 @@ namespace MailkitTools.Services
         /// The incoming mail client is not supported, or <paramref name="progress"/> 
         /// is not null and the client is an instance of <see cref="IMailSpool"/>.
         /// </exception>
-        Task<int> ReceiveHeadersAsync(Func<HeaderListInfo, Task<bool>> received, SpecialFolder? folder = null, int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
+        Task<int> ReceiveHeadersAsync(Func<HeaderListInfo, Task<bool>> received, string? folder = null, int startIndex = 0, int endIndex = -1, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously get the specified message headers. If you intend to fetch the headers of more than one message, use the extension method 
@@ -124,7 +135,7 @@ namespace MailkitTools.Services
         /// after creating an instance of the <see cref="IMailService"/> client (see <see cref="CreateIncomingClientAsync(RemoteCertificateValidationCallback, CancellationToken)"/>.
         /// </summary>
         /// <param name="index">The index of the message.</param>
-        /// <param name="folder">The special folder to use. If null, defaults to the inbox.</param>
+        /// <param name="folder">The folder to use. If null, defaults to the inbox.</param>
         /// <param name="cancellationToken">The token used to cancel an ongoing async operation.</param>
         /// <param name="certificateValidator">A callback function to validate the server certificate.</param>
         /// <param name="progress">The progress reporting mechanism.</param>
@@ -133,7 +144,7 @@ namespace MailkitTools.Services
         /// The incoming mail client is not supported, or <paramref name="progress"/> 
         /// is not null and the client is an instance of <see cref="IMailSpool"/>.
         /// </exception>
-        Task<HeaderListInfo> ReceiveHeadersAsync(int index, SpecialFolder? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
+        Task<HeaderListInfo> ReceiveHeadersAsync(int index, string? folder = null, RemoteCertificateValidationCallback? certificateValidator = null, ITransferProgress? progress = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Asynchronously creates and returns a connected instance of the <see cref="ImapClient"/> class.
